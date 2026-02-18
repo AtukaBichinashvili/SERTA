@@ -5,7 +5,7 @@ import { Product, LocalizedString, SizePrice } from '../types';
 import { 
   Trash2, Edit3, Plus, Save, X, ShoppingBag, ArrowLeft, Lock, Upload, 
   CheckCircle, Database, Star, Info, RotateCcw, Ruler,
-  MoveUp, MoveDown, Menu, Loader2, Layers, Activity, Wind
+  MoveUp, MoveDown, Menu, Loader2, Layers, Activity, Wind, AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +17,7 @@ const AdminPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [dbErrorMsg, setDbErrorMsg] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   
   const [localSettings, setLocalSettings] = useState(settings);
@@ -30,6 +31,7 @@ const AdminPage: React.FC = () => {
 
   const triggerSuccess = () => {
     setShowSuccess(true);
+    setDbErrorMsg(null);
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
@@ -70,13 +72,16 @@ const AdminPage: React.FC = () => {
     e.preventDefault();
     if (!editingProduct) return;
     setIsSaving(true);
-    const success = await saveSingleProduct(editingProduct);
+    setDbErrorMsg(null);
+    
+    const result = await saveSingleProduct(editingProduct);
+    
     setIsSaving(false);
-    if (success) {
+    if (result.success) {
       setEditingProduct(null);
       triggerSuccess();
     } else {
-      alert("შეცდომა! დარწმუნდით, რომ Supabase-ში RLS გამორთულია და SQL სკრიპტი გაშვებულია.");
+      setDbErrorMsg(result.error || "უცნობი შეცდომა ბაზაში.");
     }
   };
 
@@ -117,6 +122,12 @@ const AdminPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 pb-32">
       {showSuccess && <div className="fixed top-8 right-8 z-[200] bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black animate-in slide-in-from-right"><CheckCircle size={24} /> შენახულია!</div>}
       
+      {dbErrorMsg && (
+        <div className="fixed top-8 right-8 z-[200] bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black animate-in slide-in-from-right">
+          <AlertCircle size={24} /> {dbErrorMsg}
+        </div>
+      )}
+      
       <div className="bg-serta-navy text-white py-16">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-12">
@@ -142,7 +153,7 @@ const AdminPage: React.FC = () => {
               <button onClick={() => setEditingProduct({
                 id: 'prod-' + Date.now(), name: { ka: '', en: '' }, sizePrices: [{size: 160, price: 0}],
                 type: { ka: 'მატრასი', en: 'Mattress' }, firmness: 5, height: 25, warranty: 10, category: 'Hybrid',
-                image: '', description: { ka: '', en: '' }, features: [], isBestSeller: false
+                image: '', description: { ka: '', en: '' }, features: [], careInstructions: { ka: '', en: '' }, isBestSeller: false
               })} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest">+ Add Product</button>
             </div>
             <div className="overflow-x-auto">
@@ -158,7 +169,7 @@ const AdminPage: React.FC = () => {
                         <span className="font-bold text-serta-navy">{p.name[lang] || 'Unnamed'}</span>
                       </td>
                       <td className="p-6 text-sm font-medium text-gray-500 uppercase tracking-tighter">{p.category}</td>
-                      <td className="p-6 font-black text-serta-navy">{Math.min(...p.sizePrices.map(sp => sp.price))} ₾</td>
+                      <td className="p-6 font-black text-serta-navy">{Math.min(...(p.sizePrices || [{price:0}]).map(sp => sp.price))} ₾</td>
                       <td className="p-6 text-right">
                         <button onClick={() => setEditingProduct(p)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg mr-2 transition-all"><Edit3 size={18} /></button>
                         <button onClick={async () => { if(window.confirm('Delete?')) await setProducts(products.filter(item => item.id !== p.id)); }} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={18} /></button>
@@ -208,7 +219,7 @@ const AdminPage: React.FC = () => {
 
       {editingProduct && (
         <div className="fixed inset-0 z-[100] bg-serta-navy/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-[40px] p-8 lg:p-12 max-h-[90vh] overflow-y-auto space-y-10 shadow-2xl relative">
+          <div className="bg-white w-full max-w-5xl rounded-[40px] p-8 lg:p-12 max-h-[90vh] overflow-y-auto space-y-10 shadow-2xl relative">
             <button onClick={() => setEditingProduct(null)} className="absolute top-8 right-8 p-2 hover:bg-gray-100 rounded-full transition-all"><X /></button>
             
             <h2 className="text-3xl font-black text-serta-navy uppercase tracking-tighter">Product Editor</h2>
@@ -231,6 +242,11 @@ const AdminPage: React.FC = () => {
                   )}
                   <input ref={productImageInputRef} type="file" className="hidden" onChange={handleProductImageUpload} />
                 </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400">Or Paste Image URL (Warning: Avoid long Base64 strings)</label>
+                  <input className="w-full border p-4 rounded-xl text-xs" value={editingProduct.image} onChange={e => setEditingProduct({...editingProduct, image: e.target.value})} />
+                </div>
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
@@ -247,6 +263,11 @@ const AdminPage: React.FC = () => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-gray-400">Description (KA)</label>
                     <textarea className="w-full border p-4 rounded-xl font-medium h-32" value={editingProduct.description.ka} onChange={e => setEditingProduct({...editingProduct, description: {...editingProduct.description, ka: e.target.value}})} />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-400">Care Instructions (KA)</label>
+                    <textarea className="w-full border p-4 rounded-xl font-medium h-32" value={editingProduct.careInstructions?.ka || ''} onChange={e => setEditingProduct({...editingProduct, careInstructions: {...(editingProduct.careInstructions || {ka:'',en:''}), ka: e.target.value}})} />
                   </div>
                 </div>
               </div>

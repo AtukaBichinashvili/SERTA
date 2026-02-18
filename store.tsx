@@ -72,7 +72,7 @@ interface AppContextType {
   comparisonList: string[];
   toggleComparison: (productId: string) => void;
   products: Product[];
-  saveSingleProduct: (product: Product) => Promise<boolean>;
+  saveSingleProduct: (product: Product) => Promise<{success: boolean, error?: string}>;
   setProducts: (products: Product[]) => Promise<boolean>;
   settings: SiteSettings;
   updateSettings: (s: SiteSettings) => Promise<boolean>;
@@ -151,21 +151,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       warranty: p.warranty || 10,
       description: p.description || { ka: '', en: '' },
       features: p.features || [],
+      careInstructions: p.careInstructions || { ka: '', en: '' },
       image: p.image || '',
       isBestSeller: !!p.isBestSeller,
       category: p.category || 'Hybrid'
     };
   };
 
-  const saveSingleProduct = async (product: Product): Promise<boolean> => {
+  const saveSingleProduct = async (product: Product): Promise<{success: boolean, error?: string}> => {
     const cleanProduct = sanitizeProduct(product);
     const { error } = await supabase.from('products').upsert(cleanProduct);
     if (error) {
-      console.error("Supabase Save Error:", error.message);
-      return false;
+      console.error("Supabase Save Error:", error.message, error.details);
+      return { success: false, error: `${error.message} (${error.details})` };
     }
     await fetchData();
-    return true;
+    return { success: true };
   };
 
   const setProducts = async (newProducts: Product[]): Promise<boolean> => {
