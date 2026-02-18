@@ -1,19 +1,13 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Language, CartItem, Product, LocalizedString } from './types';
 import { PRODUCTS as INITIAL_PRODUCTS } from './constants';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://omlxshxfovwiceoqshle.supabase.co'; 
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tbHhzaHhmb3Z3aWNlb3FzaGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMDEzNzUsImV4cCI6MjA4NjU3NzM3NX0.LHo5l68dDG9win824vfBUMig1_4APbYk2mRRhec-nsw';
+const supabaseUrl = 'https://dlqilrjkuiidjyzeoscx.supabase.co'; 
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscWlscmprdWlpZGp5emVvc2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDUzNzgsImV4cCI6MjA4Njk4MTM3OH0.ys_h180Ptr8Om998prpAe95Nxz1JZePw1y0pMtVm9LY';
 
-let supabase: SupabaseClient | null = null;
-try {
-  if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-  }
-} catch (e) {
-  console.error("Supabase initialization error:", e);
-}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface Slide {
   image: string;
@@ -72,11 +66,11 @@ interface AppContextType {
   addToCart: (productId: string, size: number) => void;
   removeFromCart: (productId: string, size: number) => void;
   updateQuantity: (productId: string, size: number, delta: number) => void;
+  clearCart: () => void;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
   comparisonList: string[];
   toggleComparison: (productId: string) => void;
-  clearCart: () => void;
   products: Product[];
   setProducts: (products: Product[]) => Promise<boolean>;
   settings: SiteSettings;
@@ -84,6 +78,7 @@ interface AppContextType {
   loading: boolean;
   dbStatus: 'connected' | 'error' | 'local';
   fetchData: () => Promise<void>;
+  uploadImage: (file: File) => Promise<string | null>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -95,21 +90,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [comparisonList, setComparisonList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'local'>('local');
-  
   const [products, setProductsState] = useState<Product[]>(INITIAL_PRODUCTS);
   const [settings, setSettingsState] = useState<SiteSettings>(DEFAULT_SETTINGS);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    if (!supabase) {
-      setDbStatus('error');
-      setLoading(false);
-      return;
-    }
-
     try {
       const [pResponse, sResponse] = await Promise.all([
-        supabase.from('products').select('*').order('id'),
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('settings').select('*').eq('id', 1).maybeSingle()
       ]);
 
@@ -119,93 +107,70 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (!sResponse.error && sResponse.data) {
         const mergedSettings = { ...DEFAULT_SETTINGS, ...sResponse.data };
-        if (!Array.isArray(mergedSettings.slides)) mergedSettings.slides = DEFAULT_SETTINGS.slides;
-        if (!Array.isArray(mergedSettings.menuItems)) mergedSettings.menuItems = DEFAULT_SETTINGS.menuItems;
+        if (!mergedSettings.slides || mergedSettings.slides.length === 0) mergedSettings.slides = DEFAULT_SETTINGS.slides;
+        if (!mergedSettings.menuItems || mergedSettings.menuItems.length === 0) mergedSettings.menuItems = DEFAULT_SETTINGS.menuItems;
         setSettingsState(mergedSettings);
       }
       
       setDbStatus('connected');
     } catch (e) {
-      console.error("Fetch error:", e);
       setDbStatus('error');
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+    const { data, error } = await supabase.storage
+      .from('serta-media')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error("Upload error:", error);
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('serta-media')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
+  };
+
   const setProducts = async (newProducts: Product[]): Promise<boolean> => {
     setProductsState(newProducts);
-    if (supabase && dbStatus === 'connected') {
-      try {
-        const { error } = await supabase.from('products').upsert(newProducts);
-        return !error;
-      } catch (e) {
-        return false;
-      }
-    }
-    return true;
+    const { error } = await supabase.from('products').upsert(newProducts);
+    return !error;
   };
 
   const updateSettings = async (newSettings: SiteSettings): Promise<boolean> => {
     setSettingsState(newSettings);
-    if (supabase && dbStatus === 'connected') {
-      try {
-        const payload = { id: 1, ...newSettings };
-        const { error } = await supabase.from('settings').upsert(payload);
-        return !error;
-      } catch (e) {
-        return false;
-      }
-    }
-    return true;
+    const { error } = await supabase.from('settings').upsert({ id: 1, ...newSettings });
+    return !error;
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const addToCart = (productId: string, size: number) => {
     setCart(prev => {
       const existing = prev.find(item => item.productId === productId && item.selectedSize === size);
-      if (existing) {
-        return prev.map(item => 
-          (item.productId === productId && item.selectedSize === size) 
-          ? { ...item, quantity: item.quantity + 1 } 
-          : item
-        );
-      }
+      if (existing) return prev.map(item => (item.productId === productId && item.selectedSize === size) ? { ...item, quantity: item.quantity + 1 } : item);
       return [...prev, { productId, quantity: 1, selectedSize: size }];
     });
   };
 
-  const removeFromCart = (productId: string, size: number) => {
-    setCart(prev => prev.filter(item => !(item.productId === productId && item.selectedSize === size)));
-  };
-
-  const updateQuantity = (productId: string, size: number, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.productId === productId && item.selectedSize === size) {
-        return { ...item, quantity: Math.max(1, item.quantity + delta) };
-      }
-      return item;
-    }));
-  };
-
-  const toggleWishlist = (productId: string) => {
-    setWishlist(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
-  };
-
-  const toggleComparison = (productId: string) => {
-    setComparisonList(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
-  };
-
+  const removeFromCart = (productId: string, size: number) => setCart(prev => prev.filter(item => !(item.productId === productId && item.selectedSize === size)));
+  const updateQuantity = (productId: string, size: number, delta: number) => setCart(prev => prev.map(item => (item.productId === productId && item.selectedSize === size) ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
   const clearCart = () => setCart([]);
+  const toggleWishlist = (productId: string) => setWishlist(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
+  const toggleComparison = (productId: string) => setComparisonList(prev => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
 
   return (
     <AppContext.Provider value={{
-      lang, setLang, cart, addToCart, removeFromCart, updateQuantity, 
-      wishlist, toggleWishlist, comparisonList, toggleComparison, clearCart,
-      products, setProducts, settings, updateSettings, loading, dbStatus, fetchData
+      lang, setLang, cart, addToCart, removeFromCart, updateQuantity, clearCart, 
+      wishlist, toggleWishlist, comparisonList, toggleComparison,
+      products, setProducts, settings, updateSettings, loading, dbStatus, fetchData, uploadImage
     }}>
       {children}
     </AppContext.Provider>
