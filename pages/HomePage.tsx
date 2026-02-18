@@ -1,21 +1,13 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../store.tsx';
 import { TRANSLATIONS } from '../constants.tsx';
 import ProductCard from '../components/ProductCard.tsx';
 import { 
-  Truck, 
-  ShieldCheck, 
-  UserCheck, 
-  ArrowRight, 
-  ChevronLeft, 
-  ChevronRight,
-  Menu,
-  Layers,
-  Bed,
-  Cloud,
-  Wind,
-  ChevronRight as ChevronRightIcon
+  Truck, ShieldCheck, UserCheck, ArrowRight, ChevronLeft, ChevronRight,
+  Menu, Layers, Bed, Cloud, Wind, ChevronRight as ChevronRightIcon,
+  Award, Sparkles, Moon
 } from 'lucide-react';
 
 const GemIcon = ({ size, className }: { size: number; className?: string }) => (
@@ -34,6 +26,7 @@ const IconMap: Record<string, any> = {
 
 const ProductRow: React.FC<{ title: string; products: any[] }> = ({ title, products }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  if (!products || products.length === 0) return null;
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -43,28 +36,29 @@ const ProductRow: React.FC<{ title: string; products: any[] }> = ({ title, produ
     }
   };
 
-  if (!products || products.length === 0) return null;
-
   return (
-    <section className="py-8 lg:py-16">
-      <div className="flex items-center justify-between mb-6 lg:mb-8 px-4">
-        <h2 className="text-xl lg:text-3xl font-black text-serta-navy tracking-tight">{title}</h2>
-        <div className="flex gap-2">
-          <button onClick={() => scroll('left')} className="p-2 rounded-full border border-gray-100 hover:bg-gray-50 text-serta-navy transition-all">
-            <ChevronLeft size={18} />
+    <section className="py-12 lg:py-20">
+      <div className="flex items-center justify-between mb-8 px-4">
+        <div>
+          <h2 className="text-2xl lg:text-4xl font-black text-serta-navy tracking-tight uppercase">{title}</h2>
+          <div className="h-1.5 w-20 bg-serta-yellow mt-2 rounded-full"></div>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={() => scroll('left')} className="p-3 rounded-2xl border border-gray-100 hover:bg-serta-navy hover:text-white transition-all shadow-sm">
+            <ChevronLeft size={20} />
           </button>
-          <button onClick={() => scroll('right')} className="p-2 rounded-full border border-gray-100 hover:bg-gray-50 text-serta-navy transition-all">
-            <ChevronRight size={18} />
+          <button onClick={() => scroll('right')} className="p-3 rounded-2xl border border-gray-100 hover:bg-serta-navy hover:text-white transition-all shadow-sm">
+            <ChevronRight size={20} />
           </button>
         </div>
       </div>
       <div 
         ref={scrollRef}
-        className="flex gap-4 lg:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 pb-4"
+        className="flex gap-6 lg:gap-10 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 pb-8"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map(product => (
-          <div key={product.id} className="min-w-[260px] lg:min-w-[320px] snap-start">
+          <div key={product.id} className="min-w-[280px] lg:min-w-[360px] snap-start">
             <ProductCard product={product} />
           </div>
         ))}
@@ -79,139 +73,85 @@ const HomePage: React.FC = () => {
 
   const bestSellers = products.filter(p => p.isBestSeller);
   const mattresses = products.filter(p => p.type?.[lang]?.toLowerCase().includes(lang === 'ka' ? 'მატრასი' : 'mattress'));
-  const beds = products.filter(p => p.type?.[lang]?.toLowerCase().includes(lang === 'ka' ? 'საწოლი' : 'bed'));
-  const pillows = products.filter(p => p.type?.[lang]?.toLowerCase().includes(lang === 'ka' ? 'ბალიში' : 'pillow'));
-  const blankets = products.filter(p => p.type?.[lang]?.toLowerCase().includes(lang === 'ka' ? 'პლედი' : 'blanket'));
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = settings?.slides && Array.isArray(settings.slides) ? settings.slides : [];
-  const menuItems = settings?.menuItems && Array.isArray(settings.menuItems) ? settings.menuItems : [];
+  const slides = settings?.slides || [];
+  const menuItems = settings?.menuItems || [];
 
   useEffect(() => {
     if (slides.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    const timer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % slides.length), 6000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-
-  const benefits = [
-    { icon: <Truck size={28} />, title: { ka: 'უფასო მიწოდება', en: 'Free Delivery' }, desc: { ka: 'თბილისის მასშტაბით', en: 'Across Tbilisi area' } },
-    { icon: <ShieldCheck size={28} />, title: { ka: '10 წლიანი გარანტია', en: '10 Year Warranty' }, desc: { ka: 'ამერიკული ხარისხი', en: 'Uncompromising quality' } },
-    { icon: <GemIcon size={28} />, title: { ka: 'პრემიუმ მასალები', en: 'Premium Materials' }, desc: { ka: 'ინოვაციური მასალები', en: 'Innovative sleep tech' } },
-    { icon: <UserCheck size={28} />, title: { ka: 'ენდობა მილიონობით', en: 'Trusted by Millions' }, desc: { ka: 'მსოფლიო ბრენდი', en: 'Global industry leader' } }
-  ];
-
   return (
-    <div className="animate-in fade-in duration-700 bg-white">
-      <section className="container mx-auto px-4 py-4 lg:py-8">
-        <div className="flex flex-col md:flex-row gap-4 lg:gap-6">
-          {/* ვერტიკალური მენიუ - Sidebar */}
-          <aside className="w-full md:w-64 lg:w-72 flex flex-col bg-white rounded-2xl lg:rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex-shrink-0">
-            <div className="bg-serta-navy text-white p-4 lg:p-5 flex items-center gap-3">
+    <div className="bg-white">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          <aside className="w-full md:w-72 bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex-shrink-0 hidden md:flex flex-col">
+            <div className="bg-serta-navy text-white p-6 flex items-center gap-3">
               <Menu size={18} className="text-serta-yellow" />
-              <span className="font-black uppercase text-[10px] lg:text-xs tracking-widest">
-                {lang === 'ka' ? 'კატეგორიები' : 'Categories'}
-              </span>
+              <span className="font-black uppercase text-[10px] tracking-widest">{lang === 'ka' ? 'კატეგორიები' : 'Categories'}</span>
             </div>
-            <nav className="flex-1 py-2">
+            <nav className="flex-1 py-4">
               {menuItems.map((cat, idx) => {
                 const Icon = IconMap[cat.iconName] || Layers;
                 return (
-                  <Link 
-                    key={idx} 
-                    to={cat.path}
-                    className="flex items-center justify-between px-5 py-4 lg:px-6 lg:py-4.5 hover:bg-gray-50 transition-all group border-b border-gray-50 last:border-0"
-                  >
-                    <div className="flex items-center gap-3 lg:gap-4 overflow-hidden">
-                      <div className="text-serta-navy opacity-60 group-hover:opacity-100 transition-all">
-                        <Icon size={20} />
-                      </div>
-                      <span className="font-bold text-xs lg:text-sm text-serta-navy group-hover:translate-x-1 transition-transform truncate">
-                        {cat.name?.[lang]}
-                      </span>
+                  <Link key={idx} to={cat.path} className="flex items-center justify-between px-8 py-5 hover:bg-gray-50 transition-all group border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-4">
+                      <Icon size={20} className="text-serta-navy opacity-40 group-hover:opacity-100 transition-all" />
+                      <span className="font-bold text-sm text-serta-navy group-hover:translate-x-1 transition-transform">{cat.name?.[lang]}</span>
                     </div>
                     <ChevronRightIcon size={14} className="text-gray-300 group-hover:text-serta-navy transition-colors" />
                   </Link>
                 );
               })}
             </nav>
-            <div className="hidden lg:block p-6 border-t border-gray-50 bg-gray-50/20">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase text-gray-300 tracking-widest">
-                <span className="w-2 h-2 rounded-full bg-green-500/50"></span>
-                Premium Quality
-              </div>
-            </div>
           </aside>
 
-          {/* სლაიდერი გვერდით */}
-          <div className="flex-1 relative group rounded-2xl lg:rounded-3xl overflow-hidden bg-serta-navy h-[250px] sm:h-[400px] lg:h-[480px] shadow-lg">
-            {slides.length > 0 ? slides.map((slide, index) => (
-              <div 
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-              >
-                <img 
-                  src={slide.image} 
-                  alt={slide.title?.[lang]} 
-                  className="w-full h-full object-cover opacity-60"
-                />
-                <div className="absolute inset-0 flex items-center px-8 sm:px-16 lg:px-20">
-                  <div className="max-w-md lg:max-w-xl text-white">
-                    <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black mb-3 sm:mb-6 leading-tight tracking-tight">
+          <div className="flex-1 relative rounded-[40px] overflow-hidden bg-serta-navy h-[300px] sm:h-[450px] lg:h-[550px] shadow-2xl group">
+            {slides.map((slide, index) => (
+              <div key={index} className={`absolute inset-0 transition-all duration-1000 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}>
+                <img src={slide.image} className="w-full h-full object-cover opacity-60" />
+                <div className="absolute inset-0 flex items-center px-10 sm:px-20">
+                  <div className="max-w-2xl text-white">
+                    <div className="flex items-center gap-3 mb-6 animate-in slide-in-from-left duration-700">
+                       <Award size={24} className="text-serta-yellow" />
+                       <span className="text-xs font-black uppercase tracking-widest text-serta-yellow">World's Best Mattress</span>
+                    </div>
+                    <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tighter">
                       {slide.title?.[lang]}
                     </h2>
-                    <p className="text-xs sm:text-base lg:text-lg opacity-90 mb-6 sm:mb-10 font-medium leading-relaxed hidden sm:block">
+                    <p className="text-sm sm:text-lg lg:text-xl opacity-80 mb-10 font-medium leading-relaxed hidden sm:block">
                       {slide.subtitle?.[lang]}
                     </p>
-                    <Link 
-                      to="/shop" 
-                      className="inline-flex items-center gap-3 bg-serta-yellow text-serta-navy px-6 py-3 sm:px-10 sm:py-4 rounded-xl lg:rounded-2xl font-black text-xs sm:text-sm hover:bg-white transition-all transform hover:scale-105 shadow-xl"
-                    >
+                    <Link to="/shop" className="inline-flex items-center gap-4 bg-serta-yellow text-serta-navy px-10 py-5 rounded-[24px] font-black text-sm hover:bg-white transition-all transform hover:scale-105 shadow-2xl active:scale-95">
                       {t.hero.cta}
-                      <ArrowRight size={18} />
+                      <ArrowRight size={20} />
                     </Link>
                   </div>
                 </div>
               </div>
-            )) : (
-              <div className="w-full h-full flex items-center justify-center text-white/50 font-bold uppercase tracking-widest text-xs">
-                No active slides
-              </div>
-            )}
-            
-            {slides.length > 1 && (
-              <>
-                <button onClick={prevSlide} className="hidden lg:block absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/40"><ChevronLeft size={24} /></button>
-                <button onClick={nextSlide} className="hidden lg:block absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/40"><ChevronRight size={24} /></button>
-                
-                <div className="absolute bottom-6 right-10 flex gap-2">
-                  {slides.map((_, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => setCurrentSlide(i)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${i === currentSlide ? 'w-10 bg-serta-yellow' : 'w-4 bg-white/30 hover:bg-white/50'}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-8 lg:py-12 bg-white container mx-auto px-4">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {benefits.map((b, i) => (
-            <div key={i} className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 p-5 lg:p-6 bg-gray-50/50 rounded-2xl lg:rounded-3xl transition-all hover:bg-white hover:shadow-lg border border-transparent hover:border-gray-50">
-              <div className="text-serta-navy shrink-0">{b.icon}</div>
-              <div className="overflow-hidden">
-                <h3 className="font-black text-xs lg:text-sm text-serta-navy mb-1 truncate">{b.title[lang]}</h3>
-                <p className="text-gray-400 text-[9px] lg:text-[10px] font-bold uppercase tracking-widest leading-none truncate">{b.desc[lang]}</p>
+      {/* Trust Badges */}
+      <section className="py-16 container mx-auto px-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            { icon: <Truck size={32} />, title: { ka: 'უფასო მიწოდება', en: 'Free Delivery' }, desc: { ka: 'საქართველოს მასშტაბით', en: 'Nationwide' } },
+            { icon: <ShieldCheck size={32} />, title: { ka: '10 წლიანი გარანტია', en: '10 Year Warranty' }, desc: { ka: 'ავთენტური ხარისხი', en: 'Authentic Quality' } },
+            { icon: <Sparkles size={32} />, title: { ka: 'პრემიუმ მასალები', en: 'Premium Materials' }, desc: { ka: 'NASA-ს ტექნოლოგია', en: 'NASA Technology' } },
+            { icon: <Moon size={32} />, title: { ka: 'მშვიდი ძილი', en: 'Deep Sleep' }, desc: { ka: 'იდეალური მხარდაჭერა', en: 'Perfect Support' } }
+          ].map((b, i) => (
+            <div key={i} className="flex flex-col items-center text-center gap-4 p-8 bg-gray-50/50 rounded-[32px] hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100">
+              <div className="text-serta-navy bg-white p-4 rounded-2xl shadow-sm">{b.icon}</div>
+              <div>
+                <h3 className="font-black text-sm text-serta-navy mb-1 uppercase tracking-tight">{b.title[lang]}</h3>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{b.desc[lang]}</p>
               </div>
             </div>
           ))}
@@ -220,10 +160,23 @@ const HomePage: React.FC = () => {
 
       <div className="container mx-auto">
         <ProductRow title={t.home.popular} products={bestSellers} />
+        
+        {/* Banner Section */}
+        <section className="px-4 py-12">
+          <div className="bg-serta-navy rounded-[48px] overflow-hidden relative p-12 lg:p-24 flex flex-col lg:flex-row items-center gap-12">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-serta-yellow/5 -skew-x-12 translate-x-1/2"></div>
+            <div className="relative z-10 text-white max-w-xl text-center lg:text-left">
+              <h2 className="text-3xl lg:text-5xl font-black mb-6 uppercase tracking-tighter leading-none">Healthy Spine, <br/><span className="text-serta-yellow">Better Life.</span></h2>
+              <p className="text-lg opacity-70 mb-10 font-medium">ჩვენი ორთოპედიული სისტემები სპეციალურად შექმნილია ხერხემლის მაქსიმალური მხარდაჭერისთვის.</p>
+              <Link to="/shop" className="bg-white text-serta-navy px-12 py-5 rounded-[24px] font-black uppercase text-xs tracking-widest hover:bg-serta-yellow transition-all">Learn More</Link>
+            </div>
+            <div className="relative z-10 flex-1">
+               <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=2070&auto=format&fit=crop" className="rounded-[32px] shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700" />
+            </div>
+          </div>
+        </section>
+
         <ProductRow title={t.home.mattresses} products={mattresses} />
-        <ProductRow title={t.home.beds} products={beds} />
-        <ProductRow title={t.home.pillows} products={pillows} />
-        <ProductRow title={t.home.blankets} products={blankets} />
       </div>
     </div>
   );

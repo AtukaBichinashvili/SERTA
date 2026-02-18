@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Language, CartItem, Product, LocalizedString } from './types';
 import { PRODUCTS as INITIAL_PRODUCTS } from './constants';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://dlqilrjkuiidjyzeoscx.supabase.co'; 
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscWlscmprdWlpZGp5emVvc2N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDUzNzgsImV4cCI6MjA4Njk4MTM3OH0.ys_h180Ptr8Om998prpAe95Nxz1JZePw1y0pMtVm9LY';
@@ -108,8 +108,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (!sResponse.error && sResponse.data) {
         const mergedSettings = { ...DEFAULT_SETTINGS, ...sResponse.data };
-        if (!mergedSettings.slides || mergedSettings.slides.length === 0) mergedSettings.slides = DEFAULT_SETTINGS.slides;
-        if (!mergedSettings.menuItems || mergedSettings.menuItems.length === 0) mergedSettings.menuItems = DEFAULT_SETTINGS.menuItems;
         setSettingsState(mergedSettings);
       }
       
@@ -123,27 +121,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const { data, error } = await supabase.storage
-      .from('serta-media')
-      .upload(fileName, file);
+    try {
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const { data, error } = await supabase.storage
+        .from('serta-media')
+        .upload(fileName, file);
 
-    if (error) {
-      console.error("Upload error:", error);
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('serta-media')
+        .getPublicUrl(data.path);
+
+      return publicUrl;
+    } catch (e) {
+      console.error("Upload error:", e);
       return null;
     }
+  };
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('serta-media')
-      .getPublicUrl(data.path);
-
-    return publicUrl;
+  const sanitizeProduct = (p: Product) => {
+    return {
+      id: p.id,
+      name: p.name || { ka: 'Unnamed', en: 'Unnamed' },
+      sizePrices: p.sizePrices || [{ size: 160, price: 0 }],
+      type: p.type || { ka: '', en: '' },
+      firmness: p.firmness || 5,
+      height: p.height || 25,
+      warranty: p.warranty || 10,
+      description: p.description || { ka: '', en: '' },
+      features: p.features || [],
+      image: p.image || '',
+      isBestSeller: !!p.isBestSeller,
+      category: p.category || 'Hybrid'
+    };
   };
 
   const saveSingleProduct = async (product: Product): Promise<boolean> => {
-    const { error } = await supabase.from('products').upsert(product);
+    const cleanProduct = sanitizeProduct(product);
+    const { error } = await supabase.from('products').upsert(cleanProduct);
     if (error) {
-      console.error("Supabase Single Upsert Error:", error);
+      console.error("Supabase Save Error:", error.message);
       return false;
     }
     await fetchData();
@@ -151,9 +169,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const setProducts = async (newProducts: Product[]): Promise<boolean> => {
-    const { error } = await supabase.from('products').upsert(newProducts);
+    const cleanProducts = newProducts.map(sanitizeProduct);
+    const { error } = await supabase.from('products').upsert(cleanProducts);
     if (error) {
-      console.error("Supabase Bulk Upsert Error:", error);
+      console.error("Supabase Bulk Save Error:", error.message);
       return false;
     }
     await fetchData();
@@ -163,7 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSettings = async (newSettings: SiteSettings): Promise<boolean> => {
     const { error } = await supabase.from('settings').upsert({ id: 1, ...newSettings });
     if (error) {
-      console.error("Supabase Settings Upsert Error:", error);
+      console.error("Supabase Settings Save Error:", error.message);
       return false;
     }
     setSettingsState(newSettings);
