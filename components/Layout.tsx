@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useApp } from '../store.tsx';
-import { TRANSLATIONS } from '../constants.tsx';
+import { useApp } from '../store';
+import { TRANSLATIONS } from '../constants';
 import { ShoppingCart, Heart, Layers, Menu, X, Search, Globe, Settings, Phone } from 'lucide-react';
 
 const Header: React.FC = () => {
@@ -10,7 +11,6 @@ const Header: React.FC = () => {
   const [logoError, setLogoError] = useState(false);
   const t = TRANSLATIONS[lang];
 
-  // Reset error state if logoUrl changes
   useEffect(() => {
     setLogoError(false);
   }, [settings.logoUrl]);
@@ -38,7 +38,6 @@ const Header: React.FC = () => {
       <div className="max-w-[1140px] mx-auto px-4 lg:px-6 h-20 lg:h-28 flex items-center justify-between">
         <Logo />
 
-        {/* Search Bar - Desktop only */}
         <div className="hidden lg:flex flex-1 max-w-md mx-8">
           <div className="relative w-full">
             <input 
@@ -50,7 +49,6 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Navigation - Tablet/Desktop only */}
         <nav className="hidden md:flex items-center gap-4 lg:gap-8 font-bold text-[10px] lg:text-xs text-serta-navy uppercase tracking-tight">
           <Link to="/shop" className="hover:text-blue-700 transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-0.5 after:bg-serta-yellow hover:after:w-full after:transition-all">{t.nav.shop}</Link>
           <Link to="/about" className="hover:text-blue-700 transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-0.5 after:bg-serta-yellow hover:after:w-full after:transition-all">{t.nav.about}</Link>
@@ -58,7 +56,6 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="flex items-center gap-2 lg:gap-3 ml-2 lg:ml-4">
-          {/* Comparison - Tablet/Desktop only */}
           <Link to="/comparison" className="relative p-2 text-serta-navy hover:bg-gray-100 rounded-xl transition-all">
             <Layers size={20} />
             {comparisonList.length > 0 && (
@@ -80,7 +77,6 @@ const Header: React.FC = () => {
 
           <div className="hidden sm:block h-8 w-[1px] bg-gray-100 mx-1 lg:mx-2"></div>
 
-          {/* Lang Toggle - Desktop or specifically styled for mobile */}
           <button 
             onClick={() => setLang(lang === 'ka' ? 'en' : 'ka')}
             className="flex items-center gap-1 px-2 py-1.5 lg:px-3 lg:py-2 rounded-xl border border-gray-100 hover:bg-gray-50 transition-all text-[9px] lg:text-[10px] font-black uppercase text-serta-navy"
@@ -89,7 +85,6 @@ const Header: React.FC = () => {
             {lang === 'ka' ? 'EN' : 'KA'}
           </button>
 
-          {/* Mobile Menu Button */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 text-serta-navy"
@@ -99,23 +94,12 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Nav Overlay */}
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 p-6 flex flex-col gap-6 shadow-xl animate-in slide-in-from-top duration-300">
           <Link to="/shop" className="text-xl font-bold text-serta-navy" onClick={() => setIsMenuOpen(false)}>{t.nav.shop}</Link>
           <Link to="/about" className="text-xl font-bold text-serta-navy" onClick={() => setIsMenuOpen(false)}>{t.nav.about}</Link>
           <Link to="/warranty" className="text-xl font-bold text-serta-navy" onClick={() => setIsMenuOpen(false)}>{t.nav.warranty}</Link>
           <Link to="/comparison" className="text-xl font-bold text-serta-navy" onClick={() => setIsMenuOpen(false)}>{t.nav.comparison}</Link>
-          <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
-            <div className="relative flex-1">
-              <input 
-                type="text" 
-                placeholder={lang === 'ka' ? 'ძიება...' : 'Search...'} 
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-5 pl-11 outline-none"
-              />
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
         </div>
       )}
     </header>
@@ -180,10 +164,6 @@ const Footer: React.FC = () => {
         </div>
         <div className="pt-10 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6 lg:gap-8 text-[10px] lg:text-[11px] font-black uppercase tracking-widest text-gray-400">
           <p className="text-center md:text-left">© 2024 Serta Georgia. {lang === 'ka' ? 'ყველა უფლება დაცულია.' : 'All rights reserved.'}</p>
-          <div className="flex gap-10">
-            <span className="hover:text-serta-navy cursor-pointer transition-colors">Facebook</span>
-            <span className="hover:text-serta-navy cursor-pointer transition-colors">Instagram</span>
-          </div>
         </div>
       </div>
     </footer>
