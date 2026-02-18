@@ -1,8 +1,14 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../store';
 import { TRANSLATIONS } from '../constants';
-import { ShieldCheck, Truck, RotateCcw, Ruler, Wind, Activity, Heart, Layers, ArrowLeft, Info } from 'lucide-react';
+// Added ArrowRight to imports to resolve "Cannot find name 'ArrowRight'" error
+import { 
+  ShieldCheck, Truck, RotateCcw, Ruler, Wind, Activity, Heart, 
+  Layers, ArrowLeft, Info, CheckCircle, Star, Sparkles, CreditCard,
+  ArrowRight
+} from 'lucide-react';
 
 const PDP: React.FC = () => {
   const { id } = useParams();
@@ -13,7 +19,7 @@ const PDP: React.FC = () => {
   const product = products.find(p => p.id === id);
   const [selectedSize, setSelectedSize] = useState(product?.sizePrices[0]?.size || 160);
 
-  if (!product) return <div className="py-40 text-center">Product not found</div>;
+  if (!product) return <div className="py-40 text-center font-black text-serta-navy uppercase tracking-widest">Product not found</div>;
 
   const currentPrice = product.sizePrices.find(sp => sp.size === selectedSize)?.price || 0;
 
@@ -23,48 +29,65 @@ const PDP: React.FC = () => {
   };
 
   return (
-    <div className="py-8 lg:py-20 animate-in fade-in duration-500">
-      <div className="container mx-auto px-4">
+    <div className="py-6 lg:py-12 animate-in fade-in duration-500">
+      <div className="max-w-[1400px] mx-auto px-6">
         <button 
           onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-gray-400 hover:text-serta-navy transition-all mb-8 lg:mb-12 font-bold uppercase text-[10px] tracking-widest"
+          className="flex items-center gap-2 text-gray-400 hover:text-serta-navy transition-all mb-8 font-bold uppercase text-[10px] tracking-widest"
         >
           <ArrowLeft size={16} />
           {t.product.back}
         </button>
 
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 mb-16 lg:mb-24">
-          <div className="flex-1 space-y-6">
-            <div className="aspect-[4/3] rounded-3xl lg:rounded-[48px] overflow-hidden bg-gray-50 border border-gray-100 shadow-2xl">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 mb-24">
+          {/* Gallery Side */}
+          <div className="flex-1 space-y-4">
+            <div className="aspect-square sm:aspect-[4/3] rounded-[40px] overflow-hidden bg-gray-50 border border-gray-100 shadow-2xl relative">
               <img src={product.image} alt={product.name[lang]} className="w-full h-full object-cover" />
+              {product.isBestSeller && (
+                <div className="absolute top-8 left-8 bg-serta-yellow text-serta-navy px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-xl">
+                  {t.product.bestSeller}
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-4 gap-3 lg:gap-6">
+            <div className="grid grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="aspect-[4/3] rounded-xl lg:rounded-[24px] overflow-hidden bg-gray-50 cursor-pointer hover:ring-4 ring-serta-yellow transition-all shadow-md">
-                  <img src={`https://picsum.photos/seed/serta${product.id}${i}/400/300`} className="w-full h-full object-cover" />
+                <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-gray-50 cursor-pointer border-2 border-transparent hover:border-serta-yellow transition-all">
+                  <img src={`https://picsum.photos/seed/serta${product.id}${i}/400/400`} className="w-full h-full object-cover opacity-60 hover:opacity-100" />
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex-1 lg:py-8">
-            <div className="mb-8 lg:mb-10">
-              <div className="flex items-center gap-2 mb-4 lg:mb-6">
-                <span className="bg-serta-navy text-white text-[9px] lg:text-[10px] font-black px-3 py-1 lg:px-4 lg:py-1.5 rounded-full uppercase tracking-widest shadow-sm">{product.category}</span>
-                {product.isBestSeller && <span className="bg-serta-yellow text-serta-navy text-[9px] lg:text-[10px] font-black px-3 py-1 lg:px-4 lg:py-1.5 rounded-full uppercase tracking-widest shadow-sm">{t.product.bestSeller}</span>}
+          {/* Info Side */}
+          <div className="flex-1 py-4">
+            <div className="mb-10">
+              <div className="flex items-center gap-2 mb-6 text-serta-yellow">
+                {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+                <span className="text-gray-400 text-[10px] font-black uppercase ml-2 tracking-widest">4.9/5 (120+ Reviews)</span>
               </div>
-              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black text-serta-navy mb-4 lg:mb-6 leading-tight tracking-tight">{product.name[lang]}</h1>
-              <div className="text-3xl lg:text-4xl font-black text-blue-700">{currentPrice} <span className="text-lg lg:text-xl font-medium">₾</span></div>
+              <h1 className="text-4xl lg:text-7xl font-black text-serta-navy mb-6 tracking-tighter leading-none">{product.name[lang]}</h1>
+              <p className="text-gray-400 font-bold uppercase text-[11px] tracking-widest mb-8">{product.type[lang]}</p>
+              
+              <div className="flex items-baseline gap-4 mb-10">
+                <span className="text-4xl lg:text-6xl font-black text-blue-700">{currentPrice} ₾</span>
+                <span className="text-gray-400 font-medium line-through decoration-red-500/50">{Math.round(currentPrice * 1.25)} ₾</span>
+                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-black">-20%</span>
+              </div>
             </div>
 
-            <div className="mb-10">
-              <h3 className="font-black text-serta-navy mb-5 text-[10px] uppercase tracking-widest">{t.filter.size}</h3>
-              <div className="flex flex-wrap gap-2 lg:gap-4">
+            {/* Size Selection */}
+            <div className="mb-10 p-8 bg-gray-50 rounded-[32px] border border-gray-100">
+              <h3 className="font-black text-serta-navy mb-6 text-[11px] uppercase tracking-widest flex items-center gap-2">
+                <Ruler size={14} />
+                {t.filter.size}
+              </h3>
+              <div className="flex flex-wrap gap-3">
                 {product.sizePrices.map(sp => (
                   <button 
                     key={sp.size}
                     onClick={() => setSelectedSize(sp.size)}
-                    className={`px-5 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl border-2 font-black text-xs transition-all transform active:scale-95 ${selectedSize === sp.size ? 'border-serta-navy bg-serta-navy text-white shadow-xl scale-105' : 'border-gray-100 hover:border-serta-yellow text-gray-400 bg-gray-50/50'}`}
+                    className={`px-6 py-4 rounded-2xl border-2 font-black text-xs transition-all transform active:scale-95 ${selectedSize === sp.size ? 'border-serta-navy bg-serta-navy text-white shadow-xl' : 'border-white bg-white hover:border-serta-yellow text-gray-400'}`}
                   >
                     {sp.size} {t.product.cm}
                   </button>
@@ -72,107 +95,94 @@ const PDP: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-10 lg:mb-16">
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <button 
                 onClick={handleAddToCart}
-                className="flex-grow bg-serta-yellow text-serta-navy py-5 lg:py-6 px-8 lg:px-10 rounded-2xl lg:rounded-[24px] font-black text-lg lg:text-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 shadow-lg"
+                className="flex-grow bg-serta-yellow text-serta-navy py-6 px-10 rounded-[28px] font-black text-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4"
               >
                 {t.product.addToCart}
+                <ArrowRight size={24} />
               </button>
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <button 
                   onClick={() => toggleWishlist(product.id)}
-                  className={`flex-1 sm:flex-none p-5 lg:p-6 border-2 rounded-2xl lg:rounded-[24px] transition-all transform hover:scale-105 shadow-sm ${wishlist.includes(product.id) ? 'bg-red-50 text-red-500 border-red-100' : 'bg-white hover:bg-gray-50 border-gray-100 text-serta-navy'}`}
+                  className={`p-6 rounded-[28px] transition-all border-2 shadow-sm ${wishlist.includes(product.id) ? 'bg-red-50 text-red-500 border-red-100' : 'bg-white hover:bg-gray-50 border-gray-100 text-serta-navy'}`}
                 >
                   <Heart fill={wishlist.includes(product.id) ? 'currentColor' : 'none'} size={24} />
                 </button>
                 <button 
                   onClick={() => toggleComparison(product.id)}
-                  className={`flex-1 sm:flex-none p-5 lg:p-6 border-2 rounded-2xl lg:rounded-[24px] transition-all transform hover:scale-105 shadow-sm ${comparisonList.includes(product.id) ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-white hover:bg-gray-50 border-gray-100 text-serta-navy'}`}
+                  className={`p-6 rounded-[28px] transition-all border-2 shadow-sm ${comparisonList.includes(product.id) ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-white hover:bg-gray-50 border-gray-100 text-serta-navy'}`}
                 >
                   <Layers size={24} />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-8 py-8 border-y border-gray-100">
-              <div className="text-center">
-                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gray-50 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-3">
-                   <ShieldCheck className="text-serta-navy" size={24} />
-                </div>
-                <div className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">{t.product.warranty}</div>
-                <div className="font-black text-serta-navy text-sm">{product.warranty} {t.product.years}</div>
+            {/* High Conversion Badges */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-2xl border border-green-100">
+                <CheckCircle className="text-green-600" size={20} />
+                <span className="text-[11px] font-black text-green-800 uppercase tracking-tight">{t.product.trial}</span>
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gray-50 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-3">
-                   <Ruler className="text-serta-navy" size={24} />
-                </div>
-                <div className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">{t.product.height}</div>
-                <div className="font-black text-serta-navy text-sm">{product.height} {t.product.cm}</div>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gray-50 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-3">
-                   <Activity className="text-serta-navy" size={24} />
-                </div>
-                <div className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">{t.product.firmnessLabel}</div>
-                <div className="font-black text-serta-navy text-sm">{product.firmness}/10</div>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gray-50 rounded-xl lg:rounded-2xl flex items-center justify-center mx-auto mb-3">
-                   <Truck className="text-serta-navy" size={24} />
-                </div>
-                <div className="text-[9px] text-gray-400 uppercase font-black tracking-widest mb-1">{t.product.delivery}</div>
-                <div className="font-black text-serta-navy text-sm">{t.product.free}</div>
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                <CreditCard className="text-blue-600" size={20} />
+                <span className="text-[11px] font-black text-blue-800 uppercase tracking-tight">{t.product.financing}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <section className="bg-serta-gray/50 rounded-3xl lg:rounded-[64px] p-8 lg:p-24 shadow-inner">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl lg:text-4xl font-black text-serta-navy mb-10 lg:mb-16 text-center uppercase tracking-tight">{t.product.specifications}</h2>
-            
-            <div className="mb-16 lg:mb-24 text-center max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-serta-navy/5 px-4 py-2 rounded-xl mb-6">
-                <Info size={16} className="text-serta-navy" />
-                <span className="text-[10px] font-black uppercase text-serta-navy tracking-widest">
-                  {lang === 'ka' ? 'პროდუქტის აღწერა' : 'Product Description'}
-                </span>
-              </div>
-              <p className="text-lg lg:text-2xl text-gray-600 leading-relaxed font-medium">
-                {product.description[lang]}
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
-              <div>
-                <h3 className="text-xl lg:text-2xl font-black mb-6 lg:mb-10 flex items-center gap-4 text-serta-navy">
-                  <Wind className="text-blue-500" size={28} />
-                  {t.product.tech}
-                </h3>
-                <ul className="space-y-4 lg:space-y-6">
-                  {product.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-4 text-gray-600 group">
-                      <div className="w-5 h-5 lg:w-6 lg:h-6 rounded-full bg-serta-yellow flex-shrink-0 flex items-center justify-center text-[9px] lg:text-[10px] font-black group-hover:scale-125 transition-transform">✓</div>
-                      <span className="font-bold text-base lg:text-lg">{f[lang]}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-xl lg:text-2xl font-black mb-6 lg:mb-10 flex items-center gap-4 text-serta-navy">
-                  <RotateCcw className="text-blue-500" size={28} />
-                  {t.product.care}
-                </h3>
-                <div className="bg-white p-8 lg:p-10 rounded-2xl lg:rounded-[32px] shadow-sm border border-gray-100">
-                  <p className="text-gray-600 leading-relaxed text-sm lg:text-lg font-medium">
-                    {product.careInstructions?.[lang] || (lang === 'ka' 
-                      ? 'მოვლის ინსტრუქცია მალე დაემატება.' 
-                      : 'Care instructions will be added soon.')}
-                  </p>
-                </div>
-              </div>
-            </div>
+        {/* Detailed Specs */}
+        <section className="bg-gray-50 rounded-[64px] p-8 lg:p-24 mb-24">
+          <div className="max-w-4xl mx-auto">
+             <div className="flex flex-col lg:flex-row gap-16">
+               <div className="flex-1">
+                 <h2 className="text-3xl font-black text-serta-navy mb-8 uppercase tracking-tighter flex items-center gap-3">
+                   <Sparkles className="text-serta-yellow" size={28} />
+                   {t.product.tech}
+                 </h2>
+                 <ul className="space-y-6">
+                    {product.features.map((f, i) => (
+                      <li key={i} className="flex items-start gap-4">
+                        <div className="w-6 h-6 rounded-full bg-serta-navy text-white flex-shrink-0 flex items-center justify-center text-[10px] font-black">✓</div>
+                        <span className="font-bold text-lg text-gray-600 leading-tight">{f[lang]}</span>
+                      </li>
+                    ))}
+                 </ul>
+               </div>
+               <div className="flex-1">
+                 <h2 className="text-3xl font-black text-serta-navy mb-8 uppercase tracking-tighter flex items-center gap-3">
+                   <Info className="text-blue-500" size={28} />
+                   Details
+                 </h2>
+                 <div className="grid grid-cols-2 gap-8">
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.product.warranty}</p>
+                      <p className="text-xl font-black text-serta-navy">{product.warranty} {t.product.years}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.product.height}</p>
+                      <p className="text-xl font-black text-serta-navy">{product.height} {t.product.cm}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.product.firmnessLabel}</p>
+                      <p className="text-xl font-black text-serta-navy">{product.firmness}/10</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.product.delivery}</p>
+                      <p className="text-xl font-black text-serta-navy">{t.product.free}</p>
+                    </div>
+                 </div>
+               </div>
+             </div>
+             
+             <div className="mt-20 pt-20 border-t border-gray-200 text-center">
+                <p className="text-2xl text-gray-500 leading-relaxed font-medium">
+                  "{product.description[lang]}"
+                </p>
+             </div>
           </div>
         </section>
       </div>
