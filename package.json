@@ -10,6 +10,7 @@
     "@supabase/supabase-js": "^2.39.7"
   },
   "scripts": {
+    "build": "echo 'Static deployment - no build needed'",
     "start": "npx serve ."
   }
 }
