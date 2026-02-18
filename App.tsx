@@ -1,14 +1,14 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppProvider, useApp } from './store.tsx';
-import Layout from './components/Layout.tsx';
-import HomePage from './pages/HomePage.tsx';
-import ShopPage from './pages/ShopPage.tsx';
-import PDP from './pages/PDP.tsx';
-import CartPage from './pages/CartPage.tsx';
-import CheckoutPage from './pages/CheckoutPage.tsx';
-import ComparisonPage from './pages/ComparisonPage.tsx';
-import AdminPage from './pages/AdminPage.tsx';
+import { AppProvider, useApp } from './store';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import ShopPage from './pages/ShopPage';
+import PDP from './pages/PDP';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import ComparisonPage from './pages/ComparisonPage';
+import AdminPage from './pages/AdminPage';
 
 const AppContent: React.FC = () => {
   const context = useApp();

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Language, CartItem, Product, LocalizedString } from './types.ts';
-import { PRODUCTS as INITIAL_PRODUCTS } from './constants.tsx';
+import { Language, CartItem, Product, LocalizedString } from './types';
+import { PRODUCTS as INITIAL_PRODUCTS } from './constants';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://omlxshxfovwiceoqshle.supabase.co'; 
@@ -118,7 +118,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       if (!sResponse.error && sResponse.data) {
-        // Ensure that fetched settings have arrays if expected, fallback to defaults
         const mergedSettings = { ...DEFAULT_SETTINGS, ...sResponse.data };
         if (!Array.isArray(mergedSettings.slides)) mergedSettings.slides = DEFAULT_SETTINGS.slides;
         if (!Array.isArray(mergedSettings.menuItems)) mergedSettings.menuItems = DEFAULT_SETTINGS.menuItems;
