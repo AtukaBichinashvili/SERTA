@@ -1,0 +1,15 @@
+{
+  "name": "serta-georgia",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.1.1",
+    "lucide-react": "^0.460.0",
+    "@supabase/supabase-js": "^2.39.7"
+  },
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
