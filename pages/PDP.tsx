@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useApp } from '../store.tsx';
-import { TRANSLATIONS } from '../constants.tsx';
+import { useApp } from '../store';
+import { TRANSLATIONS } from '../constants';
 import { ShieldCheck, Truck, RotateCcw, Ruler, Wind, Activity, Heart, Layers, ArrowLeft, Info } from 'lucide-react';
 
 const PDP: React.FC = () => {

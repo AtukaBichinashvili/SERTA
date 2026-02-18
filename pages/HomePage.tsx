@@ -1,21 +1,13 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useApp } from '../store.tsx';
-import { TRANSLATIONS } from '../constants.tsx';
-import ProductCard from '../components/ProductCard.tsx';
+import { useApp } from '../store';
+import { TRANSLATIONS } from '../constants';
+import ProductCard from '../components/ProductCard';
 import { 
   Truck, ShieldCheck, UserCheck, ArrowRight, ChevronLeft, ChevronRight,
   Menu, Layers, Bed, Cloud, Wind, ChevronRight as ChevronRightIcon,
   Award, Sparkles, Moon
 } from 'lucide-react';
-
-const GemIcon = ({ size, className }: { size: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="m6 3 3 18h6l3-18Z"/>
-    <path d="M12 3v18"/>
-  </svg>
-);
 
 const IconMap: Record<string, any> = {
   Layers: Layers,
@@ -49,6 +41,7 @@ const ProductRow: React.FC<{ title: string; products: any[] }> = ({ title, produ
           </button>
           <button onClick={() => scroll('right')} className="p-3 rounded-2xl border border-gray-100 hover:bg-serta-navy hover:text-white transition-all shadow-sm">
             <ChevronRight size={20} />
+          {/* Fix: changed </div> to </button> to resolve mismatched tag error */}
           </button>
         </div>
       </div>

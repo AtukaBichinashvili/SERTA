@@ -1,6 +1,6 @@
 import React from 'react';
-import { useApp } from '../store.tsx';
-import { PRODUCTS, TRANSLATIONS } from '../constants.tsx';
+import { useApp } from '../store';
+import { PRODUCTS, TRANSLATIONS } from '../constants';
 import { X, Ruler, Shield, Layers, Wind, Activity, ArrowRight, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

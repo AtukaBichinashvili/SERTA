@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useApp } from '../store.tsx';
-import { PRODUCTS, TRANSLATIONS } from '../constants.tsx';
+import { useApp } from '../store';
+import { PRODUCTS, TRANSLATIONS } from '../constants';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 const CartPage: React.FC = () => {

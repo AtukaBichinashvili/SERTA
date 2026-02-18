@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../store.tsx';
-import { PRODUCTS, TRANSLATIONS } from '../constants.tsx';
+import { useApp } from '../store';
+import { PRODUCTS, TRANSLATIONS } from '../constants';
 import { CheckCircle2, ChevronLeft, CreditCard, Banknote } from 'lucide-react';
 
 const CheckoutPage: React.FC = () => {

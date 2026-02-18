@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useApp } from '../store.tsx';
-import { TRANSLATIONS } from '../constants.tsx';
-import ProductCard from '../components/ProductCard.tsx';
+import { useApp } from '../store';
+import { TRANSLATIONS } from '../constants';
+import ProductCard from '../components/ProductCard';
 import { SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
 
 const ShopPage: React.FC = () => {

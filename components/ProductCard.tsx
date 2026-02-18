@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '../types.ts';
-import { useApp } from '../store.tsx';
-import { TRANSLATIONS } from '../constants.tsx';
+import { Product } from '../types';
+import { useApp } from '../store';
+import { TRANSLATIONS } from '../constants';
 import { Heart, Layers, Star, ShoppingCart } from 'lucide-react';
 
 interface Props {
