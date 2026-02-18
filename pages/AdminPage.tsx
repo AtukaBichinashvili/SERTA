@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp, Slide, MenuItem } from '../store';
 import { Product, LocalizedString, SizePrice } from '../types';
@@ -10,7 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const AdminPage: React.FC = () => {
-  const { products, setProducts, settings, updateSettings, lang, dbStatus, fetchData, uploadImage } = useApp();
+  const { products, setProducts, saveSingleProduct, settings, updateSettings, lang, dbStatus, fetchData, uploadImage } = useApp();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'products' | 'settings' | 'status'>('products');
@@ -88,13 +89,13 @@ const AdminPage: React.FC = () => {
     e.preventDefault();
     if (!editingProduct) return;
     setIsSaving(true);
-    const index = products.findIndex(p => p.id === editingProduct.id);
-    const newProducts = index > -1 ? products.map(p => p.id === editingProduct.id ? editingProduct : p) : [editingProduct, ...products];
-    const success = await setProducts(newProducts);
+    const success = await saveSingleProduct(editingProduct);
     setIsSaving(false);
     if (success) {
       setEditingProduct(null);
       triggerSuccess();
+    } else {
+      alert("ბაზასთან დაკავშირება ვერ მოხერხდა. დარწმუნდით რომ Supabase-ში RLS გამორთულია.");
     }
   };
 

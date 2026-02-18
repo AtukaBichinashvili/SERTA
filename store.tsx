@@ -72,6 +72,7 @@ interface AppContextType {
   comparisonList: string[];
   toggleComparison: (productId: string) => void;
   products: Product[];
+  saveSingleProduct: (product: Product) => Promise<boolean>;
   setProducts: (products: Product[]) => Promise<boolean>;
   settings: SiteSettings;
   updateSettings: (s: SiteSettings) => Promise<boolean>;
@@ -114,6 +115,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       setDbStatus('connected');
     } catch (e) {
+      console.error("Fetch error:", e);
       setDbStatus('error');
     } finally {
       setLoading(false);
@@ -138,16 +140,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return publicUrl;
   };
 
+  const saveSingleProduct = async (product: Product): Promise<boolean> => {
+    const { error } = await supabase.from('products').upsert(product);
+    if (error) {
+      console.error("Supabase Single Upsert Error:", error);
+      return false;
+    }
+    await fetchData();
+    return true;
+  };
+
   const setProducts = async (newProducts: Product[]): Promise<boolean> => {
-    setProductsState(newProducts);
     const { error } = await supabase.from('products').upsert(newProducts);
-    return !error;
+    if (error) {
+      console.error("Supabase Bulk Upsert Error:", error);
+      return false;
+    }
+    await fetchData();
+    return true;
   };
 
   const updateSettings = async (newSettings: SiteSettings): Promise<boolean> => {
-    setSettingsState(newSettings);
     const { error } = await supabase.from('settings').upsert({ id: 1, ...newSettings });
-    return !error;
+    if (error) {
+      console.error("Supabase Settings Upsert Error:", error);
+      return false;
+    }
+    setSettingsState(newSettings);
+    return true;
   };
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -170,7 +190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{
       lang, setLang, cart, addToCart, removeFromCart, updateQuantity, clearCart, 
       wishlist, toggleWishlist, comparisonList, toggleComparison,
-      products, setProducts, settings, updateSettings, loading, dbStatus, fetchData, uploadImage
+      products, setProducts, saveSingleProduct, settings, updateSettings, loading, dbStatus, fetchData, uploadImage
     }}>
       {children}
     </AppContext.Provider>
